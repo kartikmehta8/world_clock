@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import 'package:world_clock/services/world_time.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Loading extends StatefulWidget {
   const Loading({Key? key}) : super(key: key);
@@ -12,33 +11,33 @@ class Loading extends StatefulWidget {
 
 class _LoadingState extends State<Loading> {
 
-  void getTime() async {
-    Uri uri = Uri.parse('https://worldtimeapi.org/api/timezone/Asia/Kolkata');
-    Response response = await get(uri);
-    Map data = await jsonDecode(response.body);
-
-    String datetime = data['datetime'];
-    String offsetHours = data['utc_offset'].substring(1, 3);
-    String offsetMinutes = data['utc_offset'].substring(4);
-
-    DateTime now = DateTime.parse(datetime);
-    now = now.add(Duration(hours: int.parse(offsetHours), minutes: int.parse(offsetMinutes)));
-
-    if (kDebugMode) {
-      print(now);
-    }
+  void setupWorldTime() async {
+    WorldTime instance = WorldTime(location: 'Kolkata', flag: 'kolkata.jpg', url: 'Asia/Kolkata');
+    await instance.getTime();
+    Navigator.pushReplacementNamed(context, '/home', arguments: {
+      'location': instance.location,
+      'time': instance.time,
+      'flag': instance.flag,
+      'isDayTime': instance.isDayTime,
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    getTime();
+    setupWorldTime();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Text('loading'),
+    return Scaffold(
+      backgroundColor: Colors.blue.shade900,
+      body: const Center(
+        child: SpinKitRotatingCircle(
+          color: Colors.white,
+          size: 70.0,
+        ),
+      )
     );
   }
 }
